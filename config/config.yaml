@@ -1,0 +1,17 @@
+server:
+  port: "8080"
+
+database:
+  host: "127.0.0.1"
+  port: "3306"
+  user: "root"
+  password: "771009"
+  dbname: "ticket_hub"
+
+jwt:
+  secret: "Chihaya-Anon"
+  expire_hours: 240
+
+log:
+  level: "debug"
+  format: "console"
