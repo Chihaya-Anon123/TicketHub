@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/Chihaya-Anon123/TicketHub/internal/api"
 	"github.com/Chihaya-Anon123/TicketHub/internal/config"
+	"github.com/Chihaya-Anon123/TicketHub/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,6 +19,12 @@ func SetupRouter(cfg config.JWTConfig) *gin.Engine {
 		{
 			authGroup.POST("/register", api.Register)
 			authGroup.POST("/login", api.Login)
+		}
+
+		projectGroup := apiV1.Group("/project")
+		projectGroup.Use(middleware.JWTAuth(cfg))
+		{
+			projectGroup.POST("", api.CreateProject)
 		}
 	}
 	return r
