@@ -21,11 +21,14 @@ func SetupRouter(cfg config.JWTConfig) *gin.Engine {
 			authGroup.POST("/login", api.Login)
 		}
 
-		projectGroup := apiV1.Group("/project")
+		projectGroup := apiV1.Group("/projects")
 		projectGroup.Use(middleware.JWTAuth(cfg))
 		{
 			projectGroup.POST("", api.CreateProject)
 			projectGroup.GET("", api.ListProjects)
+
+			projectGroup.POST("/:projectId/members", api.AddProjectMember)
+
 		}
 	}
 	return r

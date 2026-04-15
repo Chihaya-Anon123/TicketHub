@@ -13,6 +13,21 @@ func CreateProject(project *model.Project) error {
 	return database.DB.Create(project).Error
 }
 
+// 通过 ID 查找项目
+func GetProjectByID(projectID uint) (*model.Project, error) {
+	var project model.Project
+
+	err := database.DB.Where("id = ?", projectID).First(&project).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &project, nil
+}
+
 // 通过 UserID 和 ProjectName 查询项目
 func GetProjectByUserIDAndName(userID uint, projectname string) (*model.Project, error) {
 	var project model.Project

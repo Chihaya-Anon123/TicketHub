@@ -13,6 +13,19 @@ func CreateUser(user *model.User) error {
 	return database.DB.Create(user).Error
 }
 
+// 通过 ID 查找用户
+func GetUserByID(userID uint) (*model.User, error) {
+	var user model.User
+	err := database.DB.Where("id = ?", userID).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+
 // 通过 Username 查找用户
 func GetUserByUsername(username string) (*model.User, error) {
 	var user model.User
