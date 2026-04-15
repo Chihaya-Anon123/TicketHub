@@ -27,3 +27,26 @@ func GetProjectByUserIDAndName(userID uint, projectname string) (*model.Project,
 
 	return &project, nil
 }
+
+// 查询 UserID 下的所有项目
+func GetProjectListByUserID(userID uint, page, pageSize int, status uint8) ([]model.Project, int64, error) {
+	var projects []model.Project
+	var total int64
+
+	db := database.DB.Model(&model.Project{}).Where("owner_id = ?", userID)
+
+	if status != 0 {
+		db = db.Where("status = ?", status)
+	}
+
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * pageSize
+	if err := db.Order("id DESC").Offset(offset).Limit(pageSize).Find(&projects).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return projects, total, nil
+}

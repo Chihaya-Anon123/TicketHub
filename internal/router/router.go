@@ -25,6 +25,7 @@ func SetupRouter(cfg config.JWTConfig) *gin.Engine {
 		projectGroup.Use(middleware.JWTAuth(cfg))
 		{
 			projectGroup.POST("", api.CreateProject)
+			projectGroup.GET("", api.ListProjects)
 		}
 	}
 	return r

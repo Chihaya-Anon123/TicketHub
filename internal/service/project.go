@@ -60,3 +60,63 @@ func CreateProject(userID uint, input CreateProjectInput) (*CreateProjectOutput,
 		Status:      project.Status,
 	}, nil
 }
+
+type ListProjectsInput struct {
+	Page     int   `form:"page"`
+	PageSize int   `form:"page_size"`
+	Status   uint8 `form:"status"`
+}
+
+type ProjectItem struct {
+	ID          uint   `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Status      uint8  `json:"status"`
+}
+
+type ListProjectsOutput struct {
+	ProjectItems []ProjectItem `json:"project_items"`
+	Total        int64         `json:"total"`
+	Page         int           `json:"page"`
+	PageSize     int           `json:"page_size"`
+}
+
+// 获取用户创建的项目列表
+func ListProjects(userID uint, input ListProjectsInput) (*ListProjectsOutput, error) {
+	//检验并设置页码和页数
+	if input.Page <= 0 {
+		input.Page = 1
+	}
+	if input.PageSize <= 0 {
+		input.PageSize = 10
+	}
+	if input.PageSize > 100 {
+		input.PageSize = 100
+	}
+
+	if input.Status > 4 {
+		return nil, errs.New(code.CodeInvalidParams, "invalid status")
+	}
+
+	projects, total, err := dao.GetProjectListByUserID(userID, input.Page, input.PageSize, input.Status)
+	if err != nil {
+		return nil, errs.ErrDBError
+	}
+
+	list := make([]ProjectItem, 0, len(projects))
+	for _, project := range projects {
+		list = append(list, ProjectItem{
+			ID:          project.ID,
+			Name:        project.Name,
+			Description: project.Description,
+			Status:      project.Status,
+		})
+	}
+
+	return &ListProjectsOutput{
+		ProjectItems: list,
+		Total:        total,
+		Page:         input.Page,
+		PageSize:     input.PageSize,
+	}, nil
+}
