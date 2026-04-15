@@ -24,3 +24,20 @@ func Register(c *gin.Context) {
 
 	response.SuccessWithMessage(c, "register success", output)
 }
+
+// 用户登录
+func Login(c *gin.Context) {
+	var input service.LoginInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		response.Fail(c, code.CodeInvalidParams, "invalid request")
+		return
+	}
+
+	output, err := service.Login(input)
+	if err != nil {
+		response.HandleError(c, err)
+		return
+	}
+
+	response.SuccessWithMessage(c, "login success", output)
+}

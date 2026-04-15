@@ -5,11 +5,18 @@ import (
 	"unicode"
 
 	"github.com/Chihaya-Anon123/TicketHub/internal/code"
+	"github.com/Chihaya-Anon123/TicketHub/internal/config"
 	"github.com/Chihaya-Anon123/TicketHub/internal/dao"
 	"github.com/Chihaya-Anon123/TicketHub/internal/errs"
 	"github.com/Chihaya-Anon123/TicketHub/internal/model"
 	"github.com/Chihaya-Anon123/TicketHub/internal/utils"
 )
+
+var jwtConfig config.JWTConfig
+
+func InitAuthService(cfg config.JWTConfig) {
+	jwtConfig = cfg
+}
 
 type RegisterInput struct {
 	Username string
@@ -85,5 +92,48 @@ func Register(input RegisterInput) (*RegisterOutput, error) {
 		Username: user.Username,
 		Email:    user.Email,
 		Status:   user.Status,
+	}, nil
+}
+
+type LoginInput struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type LoginOutput struct {
+	Token    string `json:"token"`
+	ID       uint   `json:"id"`
+	Username string `json:"username"`
+}
+
+// 用户登录
+func Login(input LoginInput) (*LoginOutput, error) {
+	if input.Username == "" {
+		return nil, errs.New(code.CodeInvalidParams, "username should not be empty")
+	}
+	if input.Password == "" {
+		return nil, errs.New(code.CodeInvalidParams, "password should not be empty")
+	}
+
+	user, err := dao.GetUserByUsername(input.Username)
+	if err != nil {
+		return nil, errs.ErrDBError
+	}
+	if user == nil {
+		return nil, errs.New(code.CodeInvalidParams, "invalid username or password")
+	}
+	if err := utils.CheckPassword(user.Password, input.Password); err != nil {
+		return nil, errs.New(code.CodeInvalidParams, "invalid username or password")
+	}
+
+	token, err := utils.GenerateToken(user.ID, user.Username, jwtConfig.Secret, jwtConfig.ExpireHours)
+	if err != nil {
+		return nil, errs.ErrInternalServer
+	}
+
+	return &LoginOutput{
+		Token:    token,
+		ID:       user.ID,
+		Username: user.Username,
 	}, nil
 }

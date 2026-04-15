@@ -7,6 +7,7 @@ import (
 	"github.com/Chihaya-Anon123/TicketHub/internal/database"
 	"github.com/Chihaya-Anon123/TicketHub/internal/logger"
 	"github.com/Chihaya-Anon123/TicketHub/internal/router"
+	"github.com/Chihaya-Anon123/TicketHub/internal/service"
 )
 
 func main() {
@@ -29,6 +30,8 @@ func main() {
 	if err := database.AutoMigrate(); err != nil {
 		logger.Log.Fatalf("auto migrate failed: %v", err)
 	}
+
+	service.InitAuthService(cfg.JWT)
 
 	//初始化路由
 	r := router.SetupRouter(cfg.JWT)
